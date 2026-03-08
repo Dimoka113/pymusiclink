@@ -11,6 +11,48 @@ class Interface(object):
     cfg = None
     def __init__(self, config: Config):
         self.cfg = config
+        if not check_exists(["music", "texts"]):
+            self.cfg.ppp.print("Были созданы папки: \"music\" и \"texts\"")
+            self.help(is_only=True)
+
+    def main(self):
+        self.cfg.whp.clear()
+        tracks = give_any_mp3()
+        if len(tracks) == 0:
+            self.cfg.whp.clear()
+            self.cfg.wrp.print("В папке с треками нет треков!")
+            self.cfg.wyp.print("1. Вызвать меню помощи.")
+            self.cfg.ppp.print("2. Обновить содержимое папок.")
+            self.cfg.wrp.print("0. Выход.")
+            input()
+            if   _ == "1": self.cfg.whp.clear(); self.help()
+            elif _ == "3": self.cfg.whp.clear(); self.help()
+            elif _ == "2": self.cfg.whp.clear(); self.main()
+            elif _ == "0": self.cfg.whp.clear(); exit()
+        else:
+            while True:
+                self.cfg.whp.print("Выберите, что вы хотите сделать:", formatting="bold")
+                self.cfg.wrp.print("0. Выход")
+                self.cfg.wgp.print("1. Записать текст и тайминги нового трека")
+                self.cfg.wwp.print("2. Воспроизвести уже существующий трек")
+                self.cfg.wyp.print("3. Вызвать меню помощи.")
+                _ = str(input())
+                if   _ == "1": self.cfg.whp.clear(); self.white_text()
+                elif _ == "3": self.cfg.whp.clear(); self.help()
+                elif _ == "2": self.cfg.whp.clear(); self.play()
+                elif _ == "0": self.cfg.whp.clear(); exit()
+                else: self.cfg.whp.clear(); self.cfg.wrp.print("Что вы хотите сделать?"); continue
+
+
+    def help(self, is_only=False):
+        self.cfg.wgp.print("Чтобы использовать этот скрипт для начала вам нужно поместить в папку \"music\" те самые треки, которые вы хотите свести.")
+        self.cfg.wgp.print("В папке texts в будующем будум появляться файлы, куда вы должны будете положить текст ваших песен.")
+        self.cfg.wgp.print("Дальше просто следуйте по номерам, там всё интуетивно понятно. Удачи)")
+        
+        if is_only: self.cfg.wyp.print("Это сообщение появиться только один раз. Вы сможете его выздать повторно, в меню скрипта.")
+        self.cfg.whp.print("Нажмите Enter, чтобы открыть меню.")
+
+        input()
 
     def white_text(self):
         tracks = give_any_mp3()
@@ -25,8 +67,6 @@ class Interface(object):
         self.cfg.wyp.print("(Или просто нажмите Enter, чтобы пропустить)", formatting="italic")
         color = input(); 
         if color == "0": return False
-
-
 
         def let_check():
             for track in tracks:
@@ -47,7 +87,6 @@ class Interface(object):
 
         if not os.path.exists(f"texts/{name}.txt"):
             with open(f"texts/{name}.txt", "w+", encoding="utf-8") as file: pass
-
 
         self.cfg.whp.print(f"Теперь полностью вставьте текст вашей песни в файл: texts/{name}.txt", end="\n")
         self.cfg.wgp.print(f"Как только текст будет вставлен, нажмите Enter", end="")

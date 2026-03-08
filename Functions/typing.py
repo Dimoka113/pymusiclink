@@ -8,5 +8,8 @@ class Config(object):
     wwp = Printer
     wrp = Printer
     wyp = Printer
+    ppp = Printer
+    
     deviation = float
     volume = int
+    
