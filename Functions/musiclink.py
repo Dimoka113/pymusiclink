@@ -1,5 +1,4 @@
 from time import sleep
-from rich import print as rprint
 from Functions.musicplayer import PlaySound
 from Functions.printer import Printer
 
