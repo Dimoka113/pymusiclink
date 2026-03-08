@@ -26,3 +26,5 @@ def play_sound(file: str, color: str, lines: list, volume: int):
 
     
     sleep(timer)
+    r.clear()
+    

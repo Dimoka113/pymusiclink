@@ -60,52 +60,67 @@ def white_text():
 
     cfg.wgp.print("Отлично! Как будете готовы, нажмите Enter, чтобы начать запись таймингов трека!", end="\n")
     cfg.wyp.print("Если во время записи вы сделали ошибку, вы можете написать 1, чтобы отмотать трек до предыдущего тайминга!", end="\n")
-    cfg.wrp.print("Если-же, вы захотите начать сначала, нажмите 2.")
+    cfg.wrp.print("Если-же, вы захотите начать сначала, напишите 2.")
 
-    if input() == "0": return False
+    userin = input()
+    if userin == "0": return False 
 
-    print(tracks[number-1][1])
-    PlaySound(tracks[number-1][1], volume=cfg.volume).run(False)
-
-
-    tpr = Printer(color)
-    timing = datetime.now()
-
-    data = []
-
-    for i in text.split("\n"):
-        cfg.wgp.clear()
-        temp = []
-        temp.append(i)
-
-        tpr.print(i, end="")
-        cfg.wrp.print(" <- Нажмите Enter, когда исполнитель начнёт петь эту строчку")
-        if input() == "0": return False
-        print(datetime.now(), timing, (datetime.now() - timing).total_seconds())
-        temp.append(((datetime.now() - timing).total_seconds()) - cfg.deviation)
-        cfg.wgp.clear()
+    def run_write():
+        playread = PlaySound(tracks[number-1][1], volume=cfg.volume)
+        time = playread.run(False)
+        
+        tpr = Printer(color)
         timing = datetime.now()
+        data = []
+        for i in text.split("\n"):
+            cfg.wgp.clear()
+            temp = []
+            temp.append(i)
 
-        cfg.wgp.print(i, end="")
-        cfg.wrp.print(" <- Нажмите Enter, когда исполнитель закончит петь эту строчку")
-        if input() == "0": return False
-        print(datetime.now(), timing, (datetime.now() - timing).total_seconds())
-        temp.append(((datetime.now() - timing).total_seconds()) - cfg.deviation)
+            tpr.print(i, end="")
+            cfg.wrp.print(" <- Нажмите Enter, когда исполнитель начнёт петь эту строчку")
+            userin = input()
+            if userin == "0": return [False, 0]
+            elif userin == "2": return [False, 2]
+
+            print(datetime.now(), timing, (datetime.now() - timing).total_seconds())
+            temp.append(((datetime.now() - timing).total_seconds()) - cfg.deviation)
+            cfg.wgp.clear()
+            timing = datetime.now()
+
+            cfg.wgp.print(i, end="")
+            cfg.wrp.print(" <- Нажмите Enter, когда исполнитель закончит петь эту строчку")
+            if input() == "0": return False
+            elif userin == "2": return [False, 2]
+
+            print(datetime.now(), timing, (datetime.now() - timing).total_seconds())
+            temp.append(((datetime.now() - timing).total_seconds()) - cfg.deviation)
+            cfg.wgp.clear()
+
+            timing = datetime.now()
+
+            data.append(temp)
+
+        with open(f"data/{name}.json", "w+", encoding="utf-8") as file:
+            json.dump({"file": tracks[number-1][1], "color": color, "lines": data}, file, indent=3, ensure_ascii=False)
+
+        print(playread.get_time_left())
+        return [True, playread.get_time_left()]
+        
+    status, data = run_write()
+    if status:
         cfg.wgp.clear()
-
-        timing = datetime.now()
-
-        data.append(temp)
-
-    cfg.wgp.clear()
-    with open(f"data/{name}.json", "w+", encoding="utf-8") as file:
-        json.dump({"file": tracks[number-1][1], "color": color, "lines": data}, file, indent=3, ensure_ascii=False)
+        sleep(data)
+    else:
+        if data == 0: return False
+        elif data == 2: run_write()
 
 
 def play():
     tracks = give_any_json()
 
     def let_check():
+        cfg.wrp.print("0. Для выхода в меню", end="\n"); 
         for track in tracks:
             cfg.wwp.print(f"{1+tracks.index(track)}. {track[0]}")
 
@@ -115,15 +130,19 @@ def play():
         let_check()
         try:
             number = int(input())
-            if number == "0": return False
         except:
             cfg.whp.clear()
+            cfg.wrp.print("Что вы хотите сделать?")
+            play()
+            return False
+        
+        if number == 0: cfg.whp.clear(); return False
+
         else:
-            with open(tracks[number-1][1], "r", encoding="utf-8") as jsn:
+            with open(tracks[int(number)-1][1], "r", encoding="utf-8") as jsn:
                 data = json.load(jsn)
                 data["volume"] = cfg.volume
                 play_sound(**data)
-
 
 class Config(object):
     whp = Printer()
@@ -136,7 +155,7 @@ class Config(object):
 
 cfg = Config()
 
-"#b922ff" # Вы можете использовать эту строчку для получения нужных цветов (если вы в vs (просто нажмите на квадратик))
+"#ffffff" # Вы можете использовать эту строчку для получения нужных цветов (если вы в vs (просто нажмите на квадратик))
 
 if __name__ == "__main__":
 
@@ -148,9 +167,9 @@ if __name__ == "__main__":
     else:
         while True:
             cfg.whp.print("Выберите, что вы хотите сделать (1/2):", formatting="bold")
+            cfg.wrp.print("0. Выход")
             cfg.wgp.print("1. Записать текст и тайминги нового трека")
             cfg.wwp.print("2. Воспроизвести уже существующий трек")
-            cfg.wrp.print("3. Выход")
 
             
             _ = str(input())
@@ -160,7 +179,7 @@ if __name__ == "__main__":
             elif _ == "2":
                 cfg.whp.clear()
                 play()
-            elif _ == "3":
+            elif _ == "0":
                 cfg.whp.clear()
                 exit()
             else:

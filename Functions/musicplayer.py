@@ -15,7 +15,8 @@ class PlaySound(object):
     def __init__(self, file: str, volume: int = 100):
         self.file = file
         self.volume = volume
-        
+        self.alias = 'playsound_' + str(random())
+
     def windowscmd(self, *command):
                 buf = c_buffer(255)
                 command = ' '.join(command).encode(getfilesystemencoding())
@@ -45,25 +46,29 @@ class PlaySound(object):
         )
         os.remove(f"{filename}.tmp")
 
+    def get_time_left(self):
+        duration = self.windowscmd('status', self.alias, 'length')
+        position = self.windowscmd('status', self.alias, 'position')
+        remaining = int(duration) - int(position)
+        return float(remaining / 1000.0)
+
 
     def run(self, block=True):
         try:
-            alias = 'playsound_' + str(random())
-            self.windowscmd('open "' + self.file + '" alias', alias)
-            self.windowscmd('setaudio', alias, 'volume to', str(self.volume * 10))
+            self.windowscmd('open "' + self.file + '" alias', self.alias)
+            self.windowscmd('setaudio', self.alias, 'volume to', str(self.volume * 10))
 
-            self.windowscmd('set', alias, 'time format milliseconds')
-            durationInMS = self.windowscmd('status', alias, 'length')
-            self.windowscmd('play', alias, 'from 0 to', durationInMS.decode('mbcs'))
+            self.windowscmd('set', self.alias, 'time format milliseconds')
+            durationInMS = self.windowscmd('status', self.alias, 'length')
+            self.windowscmd('play', self.alias, 'from 0 to', durationInMS.decode('mbcs'))
         except:
             self.convert(self.file)
-            alias = 'playsound_' + str(random())
-            self.windowscmd('open "' + self.file + '" alias', alias)
-            self.windowscmd('setaudio', alias, 'volume to', str(self.volume * 10))
+            self.windowscmd('open "' + self.file + '" alias', self.alias)
+            self.windowscmd('setaudio', self.alias, 'volume to', str(self.volume * 10))
 
-            self.windowscmd('set', alias, 'time format milliseconds')
-            durationInMS = self.windowscmd('status', alias, 'length')
-            self.windowscmd('play', alias, 'from 0 to', durationInMS.decode('mbcs'))
+            self.windowscmd('set', self.alias, 'time format milliseconds')
+            durationInMS = self.windowscmd('status', self.alias, 'length')
+            self.windowscmd('play', self.alias, 'from 0 to', durationInMS.decode('mbcs'))
 
         if block:
             sleep(float(durationInMS) / 1000.0)
