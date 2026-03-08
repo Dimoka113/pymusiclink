@@ -3,11 +3,11 @@ from rich import print as rprint
 from Functions.musicplayer import PlaySound
 from Functions.printer import Printer
 
-def play_sound(file: str, color: str, lines: list):
+def play_sound(file: str, color: str, lines: list, volume: int):
     r = Printer(color)
     r.clear()
 
-    p = PlaySound(file, volume=40) 
+    p = PlaySound(file, volume=volume) 
     timer = p.run(False)
 
     
