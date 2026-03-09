@@ -9,7 +9,9 @@ class Config(object):
     wrp = Printer
     wyp = Printer
     ppp = Printer
+    exp = Printer
     
+    version = int
     deviation = float
     volume = int
     effects = {}

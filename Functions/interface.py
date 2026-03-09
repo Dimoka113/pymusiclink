@@ -10,8 +10,8 @@ class Interface(object):
     cfg = None
     def __init__(self, config: Config):
         self.cfg = config
-        if not check_exists(["music", "texts"]):
-            self.cfg.ppp.print("Были созданы папки: \"music\" и \"texts\"")
+        if not check_exists(["music", "texts", "share"]):
+            self.cfg.ppp.print("Были созданы папки: \"music\", \"texts\" и \"share\"")
             self.help(is_only=True)
 
     def main(self):
@@ -32,17 +32,93 @@ class Interface(object):
             while True:
                 self.cfg.whp.print("Выберите, что вы хотите сделать:", formatting="bold")
                 self.cfg.wrp.print("0. Выход")
-                self.cfg.wgp.print("1. Записать текст и тайминги нового трека")
-                self.cfg.wwp.print("2. Воспроизвести уже существующий трек")
-                self.cfg.wyp.print("3. Вызвать меню помощи.")
+                self.cfg.wgp.print("1. Записать текст и тайминги нового трека.")
+                self.cfg.wwp.print("2. Воспроизвести уже существующий трек.")
+                self.cfg.exp.print("3. Экспорт/Импорт ваших \"сведениями\".")
+                self.cfg.wyp.print("4. Вызвать меню помощи.")
+
                 _ = str(input())
                 if   _ == "1": self.cfg.whp.clear(); self.white_text()
-                elif _ == "3": self.cfg.whp.clear(); self.help()
+                elif _ == "4": self.cfg.whp.clear(); self.help()
                 elif _ == "2": self.cfg.whp.clear(); self.play()
+                elif _ == "3": self.cfg.whp.clear(); self.share()
                 elif _ == "0": self.cfg.whp.clear(); exit()
                 else: self.cfg.whp.clear(); self.cfg.wrp.print("Что вы хотите сделать?"); continue
 
 
+    def _export(self):
+        js = give_any_json()
+        self.cfg.wrp.print("0. Для выхода в меню", end="\n"); 
+        self.cfg.exp.print("-1. Если вы хотите экспортировать всё", end="\n"); 
+        for track in js:
+            self.cfg.wwp.print(f"{1+js.index(track)}. {track[0]}")
+        self.cfg.wgp.print("Выберите какой файл таймингов вы хотите сохранить:", end=""); 
+        
+        number = str(input())
+        if number == "0": self.cfg.whp.clear(); self.share()
+        elif number == "-1":
+            for data in js:
+                with open(data, "r") as fe:
+                    je = json.load(fe)
+                    zip_files(json_dir=file, track_dir=je["file"])
+        else:
+            try:
+                file = js[int(number)-1][1]
+            except:
+                self.cfg.whp.clear()
+                self.cfg.wrp.print("Что вы хотите сделать?"); 
+                self._export()
+            else:
+                with open(file, "r") as fe:
+                    je = json.load(fe)
+                    zip_files(json_dir=file, track_dir=je["file"])
+            
+
+    def _import(self):
+        zips = give_any_zip()
+        if len(zips) == 0:
+            self.cfg.wrp.print("Нет файлов таймингов для экспорта!")
+            self.cfg.whp.print("Нажмите Enter, чтобы открыть меню.")
+            input(); self.cfg.whp.clear(); self.share()
+
+        self.cfg.wrp.print("0. Для выхода в меню", end="\n"); 
+
+        for track in zips:
+            self.cfg.wwp.print(f"{1+zips.index(track)}. {track[0]}")
+        self.cfg.wgp.print("Выберите какой файл таймингов вы хотите загрузить:", end=""); 
+        
+        number = str(input())
+        if number == "0": self.cfg.whp.clear(); self.share()
+
+        try:
+            file = zips[int(number)-1][1]
+        except:
+            self.cfg.whp.clear()
+            self.cfg.wrp.print("Что вы хотите сделать?"); 
+            self._import()
+        else:
+            pass
+
+
+    def share(self):
+        js = give_any_json()
+
+        if len(js) != 0:
+            self.cfg.whp.print("Выберите, что вы хотите сделать:", formatting="bold")
+            self.cfg.wrp.print("0. Выход")
+            self.cfg.wgp.print("1. Экспортировать (сохранить) уже существующие свидения.")
+            self.cfg.wwp.print("2. Импортировать (загрузить) чьё-то сведение.")
+            
+            _ = str(input())
+            
+            if _ == "0": self.cfg.whp.clear(); self.main()
+            elif _ == "1": self.cfg.whp.clear(); self._export()
+            elif _ == "2": self.cfg.whp.clear(); self._import()
+        else:
+            self.cfg.wrp.print("Нет файлов таймингов для экспорта!")
+            self.cfg.whp.print("Нажмите Enter, чтобы открыть меню.")
+            input()
+            
     def help(self, is_only=False):
         self.cfg.wgp.print("Чтобы использовать этот скрипт для начала вам нужно поместить в папку \"music\" те самые треки, которые вы хотите свести.")
         self.cfg.wgp.print("В папке texts в будующем будум появляться файлы, куда вы должны будете положить текст ваших песен.")
@@ -50,19 +126,18 @@ class Interface(object):
         
         if is_only: self.cfg.wyp.print("Это сообщение появиться только один раз. Вы сможете его выздать повторно, в меню скрипта.")
         self.cfg.whp.print("Нажмите Enter, чтобы открыть меню.")
-
         input()
 
     def white_text(self):
         tracks = give_any_mp3()
 
         self.cfg.wrp.print("В любой момент вы можете написать 0, чтобы отменить создание.")
-        self.cfg.wgp.print("Введите название сохранения:", end=" "); 
+        self.cfg.wgp.print("Введите название сохранения: ", end=""); 
         
         name = input()
         if name == "0": return False
 
-        self.cfg.wgp.print("Введите цвет сохранения в формате #ffffff:", end="\n"); 
+        self.cfg.wgp.print("Введите цвет сохранения в формате #ffffff: ", end="\n"); 
         self.cfg.wyp.print("(Или просто нажмите Enter, чтобы пропустить)", formatting="italic")
         color = input(); 
         if color == "0": return False
@@ -139,7 +214,7 @@ class Interface(object):
                 data.append(temp)
 
             with open(f"data/{name}.json", "w+", encoding="utf-8") as file:
-                json.dump({"file": tracks[number-1][1], "color": color, "lines": data}, file, indent=3, ensure_ascii=False)
+                json.dump({"": self.cfg.version, "file": tracks[number-1][1], "color": color, "lines": data}, file, indent=3, ensure_ascii=False)
 
             print(playread.get_time_left())
             return [True, playread.get_time_left()]
@@ -161,7 +236,7 @@ class Interface(object):
             for track in tracks:
                 self.cfg.wwp.print(f"{1+tracks.index(track)}. {track[0]}")
 
-            self.cfg.wgp.print("Выберите какой трек вы хотите воспоизвести:", end=""); 
+            self.cfg.wgp.print("Выберите какой трек вы хотите воспоизвести: ", end=""); 
 
         while True:
             let_check()
@@ -200,7 +275,7 @@ class Interface(object):
 
             if line in self.cfg.effects:
                 eff = self.cfg.effects[line]
-                if eff[0] == "clear": r.clear(); continue; bonus += 0.15
+                if eff[0] == "clear": r.clear(); continue; bonus += 0.10
 
                 remaining = timing
                 while remaining > 0:
@@ -217,8 +292,8 @@ class Interface(object):
                     timer -= elapsed
 
                 r.clear()
-                bonus += 0.15
-                
+                bonus += 0.10
+
             else:
                 char_delay = timing / len(line)
 
@@ -229,5 +304,5 @@ class Interface(object):
 
                 r.print("\t")
 
-        sleep(timer)
+        sleep(timer-1)
         r.clear()
