@@ -1,11 +1,6 @@
 {
-    "file": "",
-    "color": "",
-    "lines": [
-        [
-            "line",
-            0.487845,
-            2.635954
-        ]
-    ]
+   "version": int,
+    "file": str,
+    "color": str,
+    "lines": list
 }

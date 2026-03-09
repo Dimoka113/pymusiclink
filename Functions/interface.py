@@ -214,7 +214,7 @@ class Interface(object):
                 data.append(temp)
 
             with open(f"data/{name}.json", "w+", encoding="utf-8") as file:
-                json.dump({"": self.cfg.version, "file": tracks[number-1][1], "color": color, "lines": data}, file, indent=3, ensure_ascii=False)
+                json.dump({"version": self.cfg.version, "file": tracks[number-1][1], "color": color, "lines": data}, file, indent=3, ensure_ascii=False)
 
             print(playread.get_time_left())
             return [True, playread.get_time_left()]
@@ -257,7 +257,7 @@ class Interface(object):
                     self.play_sound(**data)
 
 
-    def play_sound(self, file: str, color: str, lines: list, volume: int):
+    def play_sound(self, file: str, color: str, lines: list, volume: int, version: int):
         r = Printer(color)
         r.clear()
 
