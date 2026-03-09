@@ -23,7 +23,7 @@ class Interface(object):
             self.cfg.wyp.print("1. Вызвать меню помощи.")
             self.cfg.ppp.print("2. Обновить содержимое папок.")
             self.cfg.wrp.print("0. Выход.")
-            input()
+            _ = input()
             if   _ == "1": self.cfg.whp.clear(); self.help()
             elif _ == "3": self.cfg.whp.clear(); self.help()
             elif _ == "2": self.cfg.whp.clear(); self.main()
