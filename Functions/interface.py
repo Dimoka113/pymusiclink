@@ -4,8 +4,7 @@ from Functions.printer import Printer
 from datetime import datetime
 import os, json
 from Functions.musicplayer import PlaySound
-from Functions.musiclink import play_sound
-from time import sleep
+from time import sleep, perf_counter
 
 class Interface(object):
     cfg = None
@@ -180,4 +179,55 @@ class Interface(object):
                 with open(tracks[int(number)-1][1], "r", encoding="utf-8") as jsn:
                     data = json.load(jsn)
                     data["volume"] = self.cfg.volume
-                    play_sound(**data)
+                    self.play_sound(**data)
+
+
+    def play_sound(self, file: str, color: str, lines: list, volume: int):
+        r = Printer(color)
+        r.clear()
+
+        p = PlaySound(file, volume=volume)
+        timer = p.run(False)
+
+        bonus = 0.0
+        for line, words_delay, timing in lines:
+            if bonus > 0:
+                words_delay = words_delay - bonus
+                bonus = 0
+
+            sleep(words_delay)
+            timer -= words_delay
+
+            if line in self.cfg.effects:
+                eff = self.cfg.effects[line]
+                if eff[0] == "clear": r.clear(); continue; bonus += 0.15
+
+                remaining = timing
+                while remaining > 0:
+                    start = perf_counter()
+                    r.effects.random_words(eff[0], lines=eff[1], limit=eff[2])
+                    elapsed = perf_counter() - start
+                    delay = eff[3] - elapsed
+
+                    if delay > 0:
+                        sleep(delay)
+                        elapsed += delay
+
+                    remaining -= elapsed
+                    timer -= elapsed
+
+                r.clear()
+                bonus += 0.15
+                
+            else:
+                char_delay = timing / len(line)
+
+                for ch in line:
+                    sleep(char_delay)
+                    timer -= char_delay
+                    r.print(ch, end='')
+
+                r.print("\t")
+
+        sleep(timer)
+        r.clear()

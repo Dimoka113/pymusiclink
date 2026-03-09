@@ -12,4 +12,4 @@ class Config(object):
     
     deviation = float
     volume = int
-    
+    effects = {}
