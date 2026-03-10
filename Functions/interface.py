@@ -10,8 +10,8 @@ class Interface(object):
     cfg = None
     def __init__(self, config: Config):
         self.cfg = config
-        if not check_exists(["music", "texts", "share"]):
-            self.cfg.ppp.print("Были созданы папки: \"music\", \"texts\" и \"share\"")
+        if not check_exists(["data", "music", "texts", "share"]):
+            self.cfg.ppp.print("Были созданы нужные папки")
             self.help(is_only=True)
 
     def main(self):
@@ -185,33 +185,34 @@ class Interface(object):
             timing = datetime.now()
             data = []
             for i in text.split("\n"):
-                self.cfg.wgp.clear()
-                temp = []
-                temp.append(i)
+                if i != "":
+                    self.cfg.wgp.clear()
+                    temp = []
+                    temp.append(i)
 
-                tpr.print(i, end="")
-                self.cfg.wrp.print(" <- Нажмите Enter, когда исполнитель начнёт петь эту строчку")
-                userin = input()
-                if userin == "0": return [False, 0]
-                elif userin == "2": return [False, 2]
+                    tpr.print(i, end="")
+                    self.cfg.wrp.print(" <- Нажмите Enter, когда исполнитель начнёт петь эту строчку")
+                    userin = input()
+                    if userin == "0": return [False, 0]
+                    elif userin == "2": return [False, 2]
 
-                print(datetime.now(), timing, (datetime.now() - timing).total_seconds())
-                temp.append(((datetime.now() - timing).total_seconds()) - self.cfg.deviation)
-                self.cfg.wgp.clear()
-                timing = datetime.now()
+                    print(datetime.now(), timing, (datetime.now() - timing).total_seconds())
+                    temp.append(((datetime.now() - timing).total_seconds()) - self.cfg.deviation)
+                    self.cfg.wgp.clear()
+                    timing = datetime.now()
 
-                self.cfg.wgp.print(i, end="")
-                self.cfg.wrp.print(" <- Нажмите Enter, когда исполнитель закончит петь эту строчку")
-                if input() == "0": return False
-                elif userin == "2": return [False, 2]
+                    self.cfg.wgp.print(i, end="")
+                    self.cfg.wrp.print(" <- Нажмите Enter, когда исполнитель закончит петь эту строчку")
+                    if input() == "0": return False
+                    elif userin == "2": return [False, 2]
 
-                print(datetime.now(), timing, (datetime.now() - timing).total_seconds())
-                temp.append(((datetime.now() - timing).total_seconds()) - self.cfg.deviation)
-                self.cfg.wgp.clear()
+                    print(datetime.now(), timing, (datetime.now() - timing).total_seconds())
+                    temp.append(((datetime.now() - timing).total_seconds()) - self.cfg.deviation)
+                    self.cfg.wgp.clear()
 
-                timing = datetime.now()
+                    timing = datetime.now()
 
-                data.append(temp)
+                    data.append(temp)
 
             with open(f"data/{name}.json", "w+", encoding="utf-8") as file:
                 json.dump({"version": self.cfg.version, "file": tracks[number-1][1], "color": color, "lines": data}, file, indent=3, ensure_ascii=False)
@@ -231,11 +232,15 @@ class Interface(object):
     def play(self):
         tracks = give_any_json()
 
+        if len(tracks) == 0:
+            self.cfg.wrp.print("У вас нет сохранённых таймингов. Создайте или импортируйте!", end="\n"); 
+            self.cfg.whp.print("Нажмите Enter, чтобы открыть меню.")
+            input(); self.main()
+
         def let_check():
             self.cfg.wrp.print("0. Для выхода в меню", end="\n"); 
             for track in tracks:
                 self.cfg.wwp.print(f"{1+tracks.index(track)}. {track[0]}")
-
             self.cfg.wgp.print("Выберите какой трек вы хотите воспоизвести: ", end=""); 
 
         while True:
@@ -246,15 +251,16 @@ class Interface(object):
                 self.cfg.whp.clear()
                 self.cfg.wrp.print("Что вы хотите сделать?")
                 self.play()
-                return False
-            
-            if number == 0: self.cfg.whp.clear(); return False
-
-            else:
+            if number == 0: self.cfg.whp.clear(); self.main()
+            elif number <= len(tracks):
                 with open(tracks[int(number)-1][1], "r", encoding="utf-8") as jsn:
                     data = json.load(jsn)
                     data["volume"] = self.cfg.volume
                     self.play_sound(**data)
+            else:
+                self.cfg.whp.clear()
+                self.cfg.wrp.print("Такого номера не существует!")
+                self.play()
 
 
     def play_sound(self, file: str, color: str, lines: list, volume: int, version: int):
@@ -295,12 +301,12 @@ class Interface(object):
                 bonus += 0.10
 
             else:
-                char_delay = timing / len(line)
-
-                for ch in line:
-                    sleep(char_delay)
-                    timer -= char_delay
-                    r.print(ch, end='')
+                if len(line) > 0:
+                    char_delay = timing / len(line)
+                    for ch in line:
+                        sleep(char_delay)
+                        timer -= char_delay
+                        r.print(ch, end='')
 
                 r.print("\t")
 
