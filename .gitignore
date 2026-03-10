@@ -4,6 +4,7 @@ __pycache__/
 data/*.json
 !*.schema
 
+*.zip
 *.txt
 !requirements.txt
 !version.txt

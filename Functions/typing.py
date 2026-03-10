@@ -10,6 +10,7 @@ class Config(object):
     wyp = Printer
     ppp = Printer
     exp = Printer
+    rrp = Printer
     
     version = int
     deviation = float

@@ -5,7 +5,7 @@ from Functions.updater import Updater
 
 
 class Config(object):
-    version = 1.31 # Не редактируйте.
+    version = 1.4 # Не редактируйте.
     autoupdate = True
     whp = Printer()
     wgp = Printer("#caffc0")
@@ -14,6 +14,8 @@ class Config(object):
     wyp = Printer("#f4f763")
     exp = Printer("#63b4f7")
     ppp = Printer("#d58eff")
+    rrp = Printer("#f13d3d")
+    
     deviation = 0.02
     volume = 40
 

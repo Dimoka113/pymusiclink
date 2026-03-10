@@ -23,8 +23,7 @@ class Updater(object):
                 self.local_version = f.read().strip()
 
         remote_version = self.get_remote_version()
-
-        if self.parse_version(remote_version) <= self.parse_version(self.local_version):
+        if remote_version == self.local_version:
             return False
 
         tree = self.get_repo_tree()
@@ -39,7 +38,7 @@ class Updater(object):
         for root, _, files in os.walk("."):
             for file in files:
                 path = os.path.join(root, file).replace("\\", "/")
-                path = path.lstrip("./")
+                path = path.removeprefix("./")
 
                 if path == "version.txt":
                     continue
@@ -61,9 +60,6 @@ class Updater(object):
             f.write(remote_version)
         self.r.print("Обновление завершено, перезапустите скрипт, чтобы оно вступило в силу.")
         return True
-    
-    def parse_version(self, v: str): 
-        return tuple(map(int, v.strip().split(".")))
     
     def sha1_file(self, path):
         h = hashlib.sha1()
