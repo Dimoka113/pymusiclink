@@ -5,7 +5,7 @@ from Functions.updater import Updater
 
 
 class Config(object):
-    version = 1.4 # Не редактируйте.
+    version = 1.41 # Не редактируйте.
     autoupdate = True
     whp = Printer()
     wgp = Printer("#caffc0")

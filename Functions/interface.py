@@ -125,7 +125,7 @@ class Interface(object):
             elif _ == "1": self.cfg.whp.clear(); self._export()
             elif _ == "2": self.cfg.whp.clear(); self._import()
         else:
-            self.cfg.wrp.print("Нет файлов таймингов для экспорта!")
+            self.cfg.wrp.print("Нет таймингов/архивов для экспорта/импорта!")
             self.cfg.whp.print("Нажмите Enter, чтобы открыть меню.")
             input()
             
