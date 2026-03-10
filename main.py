@@ -1,10 +1,12 @@
 from Functions.printer import Printer
 from Functions.qualityoflife import *
 from Functions.interface import Interface
+from Functions.updater import Updater
 
 
 class Config(object):
-    version = 1.3 # Не редактируйте.
+    version = 1.31 # Не редактируйте.
+    autoupdate = True
     whp = Printer()
     wgp = Printer("#caffc0")
     wwp = Printer("#e9e9e9")
@@ -26,6 +28,10 @@ cfg = Config()
 
 
 def main():
+    if cfg.autoupdate:
+        u = Updater(printer=cfg.exp, branch="main")
+        if u.run(): input(); exit() 
+
     interface = Interface(cfg)
     interface.main()
 

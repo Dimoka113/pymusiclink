@@ -6,6 +6,6 @@ data/*.json
 
 *.txt
 !requirements.txt
-
+!version.txt
 
 tester.*.py
