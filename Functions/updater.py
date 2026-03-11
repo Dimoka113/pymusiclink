@@ -58,9 +58,12 @@ class Updater(object):
                 os.remove(path)
         with open("version.txt", "w", encoding="utf-8") as f:
             f.write(remote_version)
-        self.r.print("Обновление завершено, перезапустите скрипт, чтобы оно вступило в силу.")
         return True
     
+    def done(self):
+        self.r.print("Обновление завершено, перезапустите скрипт, чтобы оно вступило в силу.")
+        exit()
+
     def sha1_file(self, path):
         h = hashlib.sha1()
         with open(path, "rb") as f:

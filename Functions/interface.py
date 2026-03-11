@@ -49,6 +49,7 @@ class Interface(object):
                 elif _ == "0": self.cfg.whp.clear(); exit()
                 else: self.cfg.whp.clear(); self.cfg.wrp.print("Что вы хотите сделать?"); continue
 
+
     def _export(self):
         js = give_any_json()
         self.cfg.wrp.print("0. Для выхода в меню", end="\n"); 

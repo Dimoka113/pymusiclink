@@ -3,9 +3,8 @@ from Functions.qualityoflife import *
 from Functions.interface import Interface
 from Functions.updater import Updater
 
-
 class Config(object):
-    version = 1.41 # Не редактируйте.
+    version = 1.43 # Не редактируйте.
     autoupdate = True
     whp = Printer()
     wgp = Printer("#caffc0")
@@ -32,7 +31,7 @@ cfg = Config()
 def main():
     if cfg.autoupdate:
         u = Updater(printer=cfg.exp, branch="main")
-        if u.run(): input(); exit() 
+        if u.run(): install_requirements(); u.done(); 
 
     interface = Interface(cfg)
     interface.main()

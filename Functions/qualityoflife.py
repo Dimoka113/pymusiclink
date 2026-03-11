@@ -1,6 +1,19 @@
 import os, zipfile
 from pathlib import Path
 from datetime import datetime
+import subprocess
+import sys
+from pathlib import Path
+
+def install_requirements(requirements_path="requirements.txt"):
+    req_file = Path(requirements_path)
+    if not req_file.exists():
+        raise FileNotFoundError(f"{requirements_path} не найден")
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", str(req_file)])
+    except subprocess.CalledProcessError as e:
+        print("Ошибка установки зависимостей.")
+        raise e
 
 def zip_files(json_files: list, track_files: list, txt_files: list):
     json_files  = [Path(p) for p in  json_files]
