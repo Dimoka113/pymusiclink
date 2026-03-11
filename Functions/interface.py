@@ -108,7 +108,7 @@ class Interface(object):
             unzip_files(file)
             self.cfg.wgp.print("Импорт завершён!"); 
             self.cfg.whp.print("Нажмите Enter, чтобы открыть меню.")
-            input(); self.cfg.whp.clear()
+            input(); self.cfg.whp.clear(); self.main()
 
     def share(self):
         js = give_any_json()
