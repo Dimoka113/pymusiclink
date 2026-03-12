@@ -5,7 +5,7 @@ from Functions.printer import Printer
 
 
 class Updater(object):
-    local_version = float()
+    local_version = str()
     r = None
 
     ignore = {".git","version.txt"}
@@ -74,7 +74,8 @@ class Updater(object):
 
     @staticmethod
     def parse_version(v):
-        return tuple(map(int, v.split(".")))
+        try: return float(v)
+        except: return str(v)
 
     def sha1_file(self, path):
         h = hashlib.sha1()

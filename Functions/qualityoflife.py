@@ -4,6 +4,10 @@ from datetime import datetime
 import subprocess
 import sys
 from pathlib import Path
+import re
+
+def contains_hex_color(s: str) -> bool:
+    return bool(re.search(r"#?[0-9a-fA-F]{6}\b", s))
 
 def install_requirements(requirements_path="requirements.txt"):
     req_file = Path(requirements_path)

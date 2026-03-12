@@ -165,13 +165,43 @@ class Interface(object):
         self.cfg.wrp.print("В любой момент вы можете написать 0, чтобы отменить создание.")
         self.cfg.wgp.print("Введите название сохранения: ", end=""); 
         
-        name = input()
-        if name == "0": return False
+        def check_name():
+            while True:
+                name = input()
+                if name == "0": return False
+                elif name == "": 
+                    self.cfg.wrp.clear()
+                    self.cfg.wrp.print("Название не может быть пустым!", end="\n\n")
+                    self.cfg.wrp.print("В любой момент вы можете написать 0, чтобы отменить создание.")
+                    self.cfg.wgp.print("Введите название сохранения: ", end=""); 
+                    continue
 
-        self.cfg.wgp.print("Введите цвет сохранения в формате #ffffff: ", end="\n"); 
+
+                else: return name
+
+        name = check_name()
+        if not name: return False
+
+
+        self.cfg.wgp.print("Введите цвет сохранения в hex формате (#ffffff): ", end="\n"); 
         self.cfg.wyp.print("(Или просто нажмите Enter, чтобы пропустить)", formatting="italic")
-        color = input(); 
-        if color == "0": return False
+        
+        def check_color_exist():
+            while True:
+                color = input(); 
+                if color == "0": return False
+                elif color == "":
+                    return color
+                elif not contains_hex_color(color):
+                    self.cfg.wrp.print("Вы уверены, что это hex цвет?", end="\n")
+                    self.cfg.wgp.print("Введите цвет сохранения в hex формате (#ffffff): ", end="\n"); 
+                    self.cfg.wyp.print("(Или просто нажмите Enter, чтобы пропустить)", formatting="italic")
+                    input()
+                    self.cfg.ppp.clear()
+                else:
+                    return color
+                
+        color = check_color_exist()
 
         def let_check():
             for track in tracks:
@@ -201,16 +231,26 @@ class Interface(object):
         with open(f"texts/{name}.txt", "r", encoding="utf-8") as file:
             text = file.read()
 
-        self.cfg.wgp.print("Отлично! Как будете готовы, нажмите Enter, чтобы начать запись таймингов трека!", end="\n")
-        # cfg.wyp.print("Если во время записи вы сделали ошибку, вы можете написать 1, чтобы отмотать трек до предыдущего тайминга!", end="\n")
-        self.cfg.wrp.print("Если-же, вы захотите начать сначала, напишите 2.")
+        def check_text_exist():
+            while True:
+                with open(f"texts/{name}.txt", "r", encoding="utf-8") as file:
+                    text = file.read() 
 
+                if text != "":
+                    self.cfg.wgp.print("Отлично! Как будете готовы, нажмите Enter, чтобы начать запись таймингов трека!", end="\n")
+                    # cfg.wyp.print("Если во время записи вы сделали ошибку, вы можете написать 1, чтобы отмотать трек до предыдущего тайминга!", end="\n")
+                    self.cfg.wrp.print("Если-же, вы захотите начать сначала, напишите 2.")
+                    return text
+                else:
+                    self.cfg.wrp.print("Текст файла пустой!\nВозможно вы забыли сохранить файл?", end="\n")
+                    input()
+                    self.cfg.ppp.clear()
+        text = check_text_exist()
         userin = input()
         if userin == "0": return False 
 
-        def run_write():
-            playread = PlaySound(tracks[number-1][1], volume=self.cfg.volume)
-            playread.run(False)
+        def run_write(sound: PlaySound):
+            sound.run(False)
             
             tpr = Printer(color)
             timing = datetime.now()
@@ -234,7 +274,7 @@ class Interface(object):
 
                     self.cfg.wgp.print(i, end="")
                     self.cfg.wrp.print(" <- Нажмите Enter, когда исполнитель закончит петь эту строчку")
-                    if input() == "0": return False
+                    if input() == "0":  return [False, 0]
                     elif userin == "2": return [False, 2]
 
                     print(datetime.now(), timing, (datetime.now() - timing).total_seconds())
@@ -248,16 +288,21 @@ class Interface(object):
             with open(f"data/{name}.json", "w+", encoding="utf-8") as file:
                 json.dump({"version": self.cfg.version, "file": tracks[number-1][1], "color": color, "lines": data}, file, indent=3, ensure_ascii=False)
 
-            print(playread.get_time_left())
-            return [True, playread.get_time_left()]
-            
-        status, data = run_write()
-        if status:
-            self.cfg.wgp.clear()
-            sleep(data)
-        else:
-            if data == 0: return False
-            elif data == 2: run_write()
+            print(sound.get_time_left())
+            return [True, sound.get_time_left()]
+
+
+        while True:
+            playread = PlaySound(tracks[number-1][1], volume=self.cfg.volume)
+            status, data = run_write(playread)
+            if status:
+                self.cfg.wgp.clear()
+                sleep(data)
+                return True
+            else:
+                if data == 0: self.cfg.wgp.clear(); playread.stop(); return False
+                elif data == 2: 
+                    playread.stop(); self.cfg.wgp.clear(); continue
 
 
     def play(self):
