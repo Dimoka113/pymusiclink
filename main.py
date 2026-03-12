@@ -11,7 +11,7 @@ except:
     from Functions.updater import Updater
 
 class Config(object):
-    version = 1.5 # Не редактируйте.
+    version = 1.51 # Не редактируйте.
     autoupdate = True
     whp = Printer()
     wgp = Printer("#caffc0")

@@ -8,7 +8,7 @@ class Updater(object):
     local_version = str()
     r = None
 
-    ignore = {".git","version.txt"}
+    ignore = {".git", "data", "share", "music", "texts"}
     owner = "Dimoka113"
     repo = "pymusiclink"
     branch = "main"
