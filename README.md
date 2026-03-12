@@ -7,8 +7,9 @@ How to install
 
 * Download Python 3.11 (newer or older versions may be supported, but this has not been tested).
 * Download the latest version or clone the repository
+* You may also need to install ffmpeg in the path (if you are using Windows).
 * Optional: Install Visual Studio Code for a more aesthetic text display
-* Install dependencies using the command: `pip install -r requirements.txt`
+* <s>Install dependencies using the command: `pip install -r requirements.txt`</s><br>Now, when you run the script and there are no dependencies, the script itself 
 
 How to use:
 ------
