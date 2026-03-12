@@ -341,5 +341,5 @@ class Interface(object):
 
                 r.print("\t")
 
-        sleep(timer-1)
+        sleep(timer)
         r.clear()
