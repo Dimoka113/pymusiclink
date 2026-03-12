@@ -8,14 +8,16 @@ class Updater(object):
     local_version = float()
     r = None
 
+    ignore = {".git","version.txt"}
     owner = "Dimoka113"
     repo = "pymusiclink"
     branch = "main"
 
-    def __init__(self, printer: Printer, branch="main"):
+    def __init__(self, printer: Printer, ignore: list = None, branch="main"):
         self.local_version = "0.0"
         self.branch = branch
         self.r = printer
+        if ignore: self.ignore = ignore
 
     def run(self):
         if os.path.exists("version.txt"):
@@ -23,15 +25,17 @@ class Updater(object):
                 self.local_version = f.read().strip()
 
         remote_version = self.get_remote_version()
-        if remote_version == self.local_version:
+        if self.parse_version(remote_version) <= self.parse_version(self.local_version):
             return False
 
         tree = self.get_repo_tree()
 
         repo_files = {}
         for item in tree:
-            if item["type"] == "blob":
-                repo_files[item["path"]] = item["sha"]
+            if item["type"] != "blob": continue
+            path = item["path"]
+            if self.is_ignored(path): continue
+            repo_files[path] = item["sha"]
 
         local_files = {}
 
@@ -53,7 +57,7 @@ class Updater(object):
                 self.r.print("Обновлено:", path)
                 self.download_file(path)
         for path in local_files:
-            if path not in repo_files:
+            if path not in repo_files and not self.is_ignored(path):
                 self.r.print("Удалено:", path)
                 os.remove(path)
         with open("version.txt", "w", encoding="utf-8") as f:
@@ -63,6 +67,14 @@ class Updater(object):
     def done(self):
         self.r.print("Обновление завершено, перезапустите скрипт, чтобы оно вступило в силу.")
         exit()
+
+    def is_ignored(self, path: str):
+        parts = path.split("/")
+        return any(p in self.ignore for p in parts)
+
+    @staticmethod
+    def parse_version(v):
+        return tuple(map(int, v.split(".")))
 
     def sha1_file(self, path):
         h = hashlib.sha1()

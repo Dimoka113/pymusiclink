@@ -4,7 +4,7 @@ from Functions.interface import Interface
 from Functions.updater import Updater
 
 class Config(object):
-    version = 1.43 # Не редактируйте.
+    version = 1.45 # Не редактируйте.
     autoupdate = True
     whp = Printer()
     wgp = Printer("#caffc0")
