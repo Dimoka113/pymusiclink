@@ -11,7 +11,7 @@ except:
     from Functions.updater import Updater
 
 class Config(object):
-    version = 1.51 # Не редактируйте.
+    version = 1.53 # Не редактируйте.
     autoupdate = True
     whp = Printer()
     wgp = Printer("#caffc0")
@@ -37,8 +37,14 @@ cfg = Config()
 
 def main():
     if cfg.autoupdate:
-        u = Updater(printer=cfg.exp, branch="main")
-        if u.run(): install_requirements(); u.done(); 
+        try:
+            u = Updater(printer=cfg.exp, branch="main")
+            if u.run(): install_requirements(); u.done(); 
+        except:
+            cfg.rrp.print("Не удалось проверить наличие обновлений. Проверьте подключение к интернету!")
+            cfg.whp.print("Нажмите на любую клавишу, чтобы открыть скрипт, или нажмите 0, для выхода")
+            if input() == "0": exit()
+
 
     interface = Interface(cfg)
     interface.main()

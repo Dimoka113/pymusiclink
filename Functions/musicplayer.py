@@ -53,6 +53,8 @@ class PlaySound(object):
         return float(remaining / 1000.0)
 
     def stop(self): self.windowscmd('stop', self.alias)
+    def pause(self): self.windowscmd('pause', self.alias)
+    def resume(self): self.windowscmd('resume', self.alias)
 
     def run(self, block=True):
         try:
