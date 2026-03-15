@@ -231,6 +231,17 @@ class Interface(object):
         with open(f"texts/{name}.txt", "r", encoding="utf-8") as file:
             text = file.read()
 
+        def check_type_write():
+            self.cfg.whp.print("Введите тип записи:", end="\n")
+            self.cfg.wwp.print("1. По строчно", end="\n")
+            self.cfg.wgp.print("2. По словам (новое)", end="\n")
+
+            _type = input()
+            if _type in ["1", ""]: return "line"
+            elif _type in ["2"]: return "word"
+
+        _type = check_type_write()
+
         def check_text_exist():
             while True:
                 with open(f"texts/{name}.txt", "r", encoding="utf-8") as file:
@@ -245,59 +256,136 @@ class Interface(object):
                     self.cfg.wrp.print("Текст файла пустой!\nВозможно вы забыли сохранить файл?", end="\n")
                     input()
                     self.cfg.ppp.clear()
+
         text = check_text_exist()
         userin = input()
         if userin == "0": return False 
 
-        def run_write(sound: PlaySound):
+        def run_write(sound: PlaySound, _type: int):
             sound.run(False)
             
             tpr = Printer(color)
             timing = datetime.now()
             data = []
-            for i in text.split("\n"):
-                if i != "":
-                    self.cfg.wgp.clear()
-                    temp = []
-                    temp.append(i)
+            if _type == "line":
+                for line in text.split("\n"):
+                    if line != "":
+                        self.cfg.wgp.clear()
+                        temp = []
+                        temp.append(line)
 
-                    tpr.print(i, end="")
-                    self.cfg.wrp.print(" <- Нажмите Enter, когда исполнитель начнёт петь эту строчку")
+                        tpr.print(line, end="")
+                        self.cfg.wrp.print(" <- Enter, когда начнётся эта строчка")
+                        userin = input()
+                        if userin == "0": return [False, 0]
+                        elif userin == "2": return [False, 2]
+                        temp.append(((datetime.now() - timing).total_seconds()) - self.cfg.deviation)
+                        self.cfg.wgp.clear()
+                        timing = datetime.now()
+
+                        self.cfg.wgp.print(line, end="")
+                        self.cfg.wrp.print(" <- Enter, когда закончится эта строчка")
+                        if input() == "0":  return [False, 0]
+                        elif userin == "2": return [False, 2]
+
+                        temp.append(((datetime.now() - timing).total_seconds()) - self.cfg.deviation)
+                        self.cfg.wgp.clear()
+
+                        timing = datetime.now()
+
+                        data.append(temp)
+            elif _type == "word":
+                lines_words = [line.split() for line in text.split("\n") if line.strip()]
+                data = [[] for _ in lines_words]
+
+                line_i = 0
+                word_i = 0
+
+                prev_line = None
+                prev_word = None
+
+                while line_i < len(lines_words):
+                    words = lines_words[line_i]
+
+                    self.cfg.wgp.clear()
+
+                    # текущая строка
+                    for i, w in enumerate(words):
+                        if i < word_i:
+                            tpr.print(w, end=" ")
+                        elif i == word_i:
+                            self.cfg.wgp.print(w, end=" ")
+                        else:
+                            self.cfg.grp.print(w, end=" ")
+
+                    self.cfg.wrp.print("<- Enter когда начинается это слово", end="")
+                    print()
+
+                    # следующая строка (серым)
+                    if line_i + 1 < len(lines_words):
+                        for w in lines_words[line_i + 1]:
+                            self.cfg.grp.print(w, end=" ")
+                        print()
+
+
                     userin = input()
                     if userin == "0": return [False, 0]
                     elif userin == "2": return [False, 2]
 
-                    print(datetime.now(), timing, (datetime.now() - timing).total_seconds())
-                    temp.append(((datetime.now() - timing).total_seconds()) - self.cfg.deviation)
-                    self.cfg.wgp.clear()
+                    now = ((datetime.now() - timing).total_seconds()) - self.cfg.deviation_in_word
                     timing = datetime.now()
 
-                    self.cfg.wgp.print(i, end="")
-                    self.cfg.wrp.print(" <- Нажмите Enter, когда исполнитель закончит петь эту строчку")
-                    if input() == "0":  return [False, 0]
-                    elif userin == "2": return [False, 2]
+                    # закрываем предыдущее слово
+                    if prev_line is not None:
+                        data[prev_line][prev_word].append(now)
 
-                    print(datetime.now(), timing, (datetime.now() - timing).total_seconds())
-                    temp.append(((datetime.now() - timing).total_seconds()) - self.cfg.deviation)
-                    self.cfg.wgp.clear()
+                    # старт текущего слова
+                    word = lines_words[line_i][word_i]
+                    data[line_i].append([word, now])
 
-                    timing = datetime.now()
+                    prev_line = line_i
+                    prev_word = word_i
 
-                    data.append(temp)
+                    word_i += 1
+
+                    if word_i >= len(words):
+                        line_i += 1
+                        word_i = 0
+
+                # закрываем последнее слово
+                self.cfg.wgp.clear()
+                self.cfg.wrp.print("Нажмите Enter когда закончится последнее слово")
+
+                userin = input()
+                self.cfg.wgp.clear()
+                if userin == "0": return [False, 0]
+                elif userin == "2": return [False, 2]
+
+                end = ((datetime.now() - timing).total_seconds()) - self.cfg.deviation_in_word
+
+                data[prev_line][prev_word].append(end)
 
             with open(f"data/{name}.json", "w+", encoding="utf-8") as file:
-                json.dump({"version": self.cfg.version, "file": tracks[number-1][1], "color": color, "lines": data}, file, indent=3, ensure_ascii=False)
+                json.dump(
+                    {
+                        "version": self.cfg.version, 
+                        "file": tracks[number-1][1], 
+                        "color": color, 
+                        "lines": data, 
+                        "_type": _type
+                    }, 
+                    file, indent=3, ensure_ascii=False
+                )
 
-            print(sound.get_time_left())
             return [True, sound.get_time_left()]
 
 
         while True:
             playread = PlaySound(tracks[number-1][1], volume=self.cfg.volume)
-            status, data = run_write(playread)
+            status, data = run_write(playread, _type)
             if status:
-                self.cfg.wgp.clear()
                 sleep(data)
+                self.cfg.wgp.clear()
                 return True
             else:
                 if data == 0: self.cfg.wgp.clear(); playread.stop(); return False
@@ -339,7 +427,15 @@ class Interface(object):
                 self.play()
 
 
-    def play_sound(self, file: str, color: str, lines: list, volume: int, version: int):
+    def play_sound(self, file: str, color: str, lines: list, volume: int, version: int, _type: str):
+        print(self.cfg.version, version)
+        if self.cfg.version > version:
+            self.cfg.wrp.print(f"Версия таймингов ({version}) старее версии скрипта ({self.cfg.version}), вы уверены, что хотите воспроизвести этот трек? (y/n)")
+            if not (input().lower() in ["", "y", "yes", "да", "д"]): return False
+        elif self.cfg.version < version:
+            self.cfg.wrp.print(f"Версия таймингов ({version}) новее версии скрипта ({self.cfg.version}), вы уверены, что хотите воспроизвести этот трек? (y/n)")
+            if not (input().lower() in ["", "y", "yes", "да", "д"]): return False
+
         r = Printer(color)
         r.clear()
 
@@ -347,44 +443,70 @@ class Interface(object):
         timer = p.run(False)
 
         bonus = 0.0
-        for line, words_delay, timing in lines:
-            if bonus > 0:
-                words_delay = words_delay - bonus
-                bonus = 0
+        if _type == "line":
+            for line, words_delay, timing in lines:
+                if bonus > 0:
+                    words_delay = words_delay - bonus
+                    bonus = 0
 
-            sleep(words_delay)
-            timer -= words_delay
+                sleep(words_delay)
+                timer -= words_delay
 
-            if line in self.cfg.effects:
-                eff = self.cfg.effects[line]
-                if eff[0] == "clear": r.clear(); continue; bonus += 0.10
+                if line in self.cfg.effects:
+                    eff = self.cfg.effects[line]
+                    if eff[0] == "clear": r.clear(); continue; bonus += 0.10
 
-                remaining = timing
-                while remaining > 0:
-                    start = perf_counter()
-                    r.effects.random_words(eff[0], lines=eff[1], limit=eff[2])
-                    elapsed = perf_counter() - start
-                    delay = eff[3] - elapsed
+                    remaining = timing
+                    while remaining > 0:
+                        start = perf_counter()
+                        r.effects.random_words(eff[0], lines=eff[1], limit=eff[2])
+                        elapsed = perf_counter() - start
+                        delay = eff[3] - elapsed
 
-                    if delay > 0:
-                        sleep(delay)
-                        elapsed += delay
+                        if delay > 0:
+                            sleep(delay)
+                            elapsed += delay
 
-                    remaining -= elapsed
-                    timer -= elapsed
+                        remaining -= elapsed
+                        timer -= elapsed
 
-                r.clear()
-                bonus += 0.10
+                    r.clear()
+                    bonus += 0.10
 
-            else:
-                if len(line) > 0:
-                    char_delay = timing / len(line)
-                    for ch in line:
-                        sleep(char_delay)
-                        timer -= char_delay
-                        r.print(ch, end='')
+                else:
+                    if len(line) > 0:
+                        char_delay = timing / len(line)
+                        for ch in line:
+                            sleep(char_delay)
+                            timer -= char_delay
+                            r.print(ch, end='')
 
-                r.print("\t")
+                    r.print("\t")
 
+            sleep(timer)
+            r.clear()
+
+        elif _type == "word":
+            bonus = 0.0
+            tmp = 0.0
+            tmp_w = 0.0
+            for line in lines:
+                for word, words_delay, timing in line:
+                    if bonus > 0:
+                        words_delay -= bonus
+                        bonus = 0.0
+                    if words_delay > 0:
+                        if words_delay - tmp - tmp_w > 0:
+                            sleep(words_delay - tmp - tmp_w)
+                            timer -= words_delay - timing
+                    tmp = 0.0
+                    for w in word:
+                        r.print(w, end="")
+                        tt = timing / len(word)
+                        sleep(tt)
+                        timer -= tt
+                        tmp += tt
+                    r.print(" ", end="")
+                r.print("", end="\n")
         sleep(timer)
         r.clear()

@@ -2,5 +2,6 @@
    "version": int,
     "file": str,
     "color": str,
-    "lines": list
+    "lines": list,
+    "type": str ["line", "word"]
 }

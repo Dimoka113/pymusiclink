@@ -11,7 +11,7 @@ except:
     from Functions.updater import Updater
 
 class Config(object):
-    version = 1.53 # Не редактируйте.
+    version = 1.57 # Не редактируйте.
     autoupdate = True
     whp = Printer()
     wgp = Printer("#caffc0")
@@ -21,8 +21,12 @@ class Config(object):
     exp = Printer("#63b4f7")
     ppp = Printer("#d58eff")
     rrp = Printer("#f13d3d")
-    
+    grp = Printer("#858585")
+
     deviation = 0.02
+
+    deviation_in_word = 0.0
+    animation_in_word = 0.05
     volume = 40
 
     effects = {

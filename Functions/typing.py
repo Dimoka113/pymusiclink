@@ -11,8 +11,12 @@ class Config(object):
     ppp = Printer
     exp = Printer
     rrp = Printer
-    
+    grp = Printer
+
     version = int
     deviation = float
+    deviation_in_word = float
+    animation_in_word = float
+    
     volume = int
     effects = {}
